@@ -4,21 +4,20 @@ import './StoreData.sol';
 import './ECVerify.sol';
 import './BrandTokenInterface.sol';
 
-contract TerminalManager {
+contract DeviceManager {
 	BrandTokenInterface public brandToken;
 	StoreData public storeDataStorage;
 
 	mapping(address => bool) public admins;
-	mapping(address => uint) public uuids;
 
-	constructor(address[] _admins, uint[] _uuids) public {}
+	constructor(address[] _admins) public {}
 
-	function registerAdmin(address _newAdmin, uint _uuid) public onlyAdmins {}
+	function registerAdmin(address _newAdmin) public onlyAdmins {}
 
 	// if upgradeable, it goes to the constructor
 	function registerStorage(address _storeData) public onlyAdmins {}
 
-	function updateBalance(
+	function updateBalance( // TODO: gas가 적다면 signature 다 붙여서 하는걸로
 		bytes _balanceSig,
 		bytes _saltSig,
 		bytes _storeSignedKeySig,
@@ -32,8 +31,8 @@ contract TerminalManager {
 		uint _timestamp,
 		bytes32 _btId
 		) public onlyAdmins {
-		// verifying
-		// storing
+		// TODO: verifying
+		// TODO: storing
 		brandToken.updateBalance(_balance, _salt, _storeSignedKey, _userSignedKey, _uuid, _timestamp, _btId);
 	}
 
@@ -44,7 +43,7 @@ contract TerminalManager {
 		) public onlyAdmins {
 		// verifying
 
-		storeDataStorage.upsertData(...)
+		storeDataStorage.upsertData(...);
 	}
 
 }

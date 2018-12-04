@@ -2,24 +2,27 @@ pragma solidity ^0.4.23;
 
 contract PurchaseData {
 	// key: purchaseId
-	mapping(uint => uint) public userId;
-	mapping(uint => address) public userAddress;
-	mapping(uint => string) public paymentMethod;
-	mapping(uint => uint) public createdAt;
-	mapping(uint => uint) public latitude;
-	mapping(uint => uint) public longitude;
-	mapping(uint => bytes) public itemInfo;
+	mapping(uint => uint) public userIds;
+	mapping(uint => address) public userAddresses;
+
+	// 결제 정보들
+	mapping(uint => string) public paymentMethods;
+	mapping(uint => uint) public createdAts;
+	mapping(uint => uint) public storeLatitudes;
+	mapping(uint => uint) public storeLongitudes;
+	mapping(uint => bytes) public items;
 
 	address public managerAddress;
 
 /*
-	Item: [{
-		string name;
-		uint price; // ISSUE: 달러의 경우 0.5$ 이런게 있는데 string으로 해야하나
-		string currency;
-		uint quantity;
+	json
+	Item: [{ // convention을 정해야함
+		string name,
+		float price,
+		string currency,
+		int quantity
 	}, {
-	
+
 	},
 	...
 	]을 serialize한 정보
@@ -34,7 +37,7 @@ contract PurchaseData {
 		uint _createdAt,
 		uint _latitude,
 		uint _longitude,
-		bytes _itemInfo
+		bytes _items
 		) public onlyManager {}
 
 	// + 각각에 대한 setter

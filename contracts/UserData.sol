@@ -2,13 +2,13 @@ pragma solidity ^0.4.23;
 
 contract UserData {
 	// key: userId
-	mapping(uint => address) public userAddress;
-	mapping(uint => string) public userGender;
-	mapping(uint => uint) public userBirthYear; // timestamp
-	mapping(uint => uint) public userBirthMonth; // timestamp
-	mapping(uint => uint) public userBirthDay; // timestamp
-	mapping(uint => string) public userCountry; // 거주 지역
-	mapping(uint => string) public userJob;
+	mapping(uint => address) public userAddresses;
+	mapping(uint => string) public userGenders;
+	mapping(uint => uint) public userBirthYears; // timestamp
+	mapping(uint => uint) public userBirthMonths; // timestamp
+	mapping(uint => uint) public userBirthDays; // timestamp
+	mapping(uint => string) public userCountries; // 거주 지역
+	mapping(uint => string) public userJobs; // 직장
 
 	address public managerAddress;
 

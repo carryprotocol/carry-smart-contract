@@ -5,18 +5,20 @@ import './UserData.sol';
 import './ECVerify.sol';
 
 contract AppManager {
-	mapping(address => bool) public admins;
-	mapping(address => uint) public uuids;
 
 	PurchaseData public purchaseDataStorage;
 	UserData public userDataStorage;
 
-	constructor(address[] _admins, uint[] _uuids) public {}
+	// 해당 address가 승인된 App Manager인가?
+	mapping(address => bool) public admins;
 
-	function registerAdmin(address _newAdmin, uint _uuid) public onlyAdmins {}
+	constructor(address[] _admins) public {}
+
+	function registerAdmin(address _newAdmin) public onlyAdmins {}
 
 	// if upgradeable, it goes to the constructor
-	function registerStorage(address _purchaseData, address _userData) public onlyAdmins {}
+	function registerPurchaseDataStorage(address _purchaseDataStorage) public onlyAdmins {}
+	function registerUserDataStorage(address _userDataStorage) public onlyAdmins {}
 
 	function upsertPurchaseData(
 		uint _purchaseId,
@@ -26,21 +28,21 @@ contract AppManager {
 
 		// verify signature with information
 
-		purchaseDataStorage.upsertData(...)
+		purchaseDataStorage.upsertData(datas...)
 
-		_calculateCRE(...);
+		uint amount = _calculateCRE(datas...);
+		_transferCRE(amount, userAddress); //
 	}
 
 	function upsertUserData(
 		uint _userId,
 		// datas...
-		string _userCountry,
-		bytes _signature // signature 어떻게 뽑을 것이고 어떻게 검증할 것인가
+		bytes _signature // signature 어떻게 뽑을 것이고 어떻게 검증할 것인가 => bytes로 다 바꿔서 concate해서 sing한걸 쓰자
 		) public onlyAdmins {
 
 		// verify
 
-		userDataStorage.upsertData(...)
+		userDataStorage.upsertData(datas...)
 	}
 
 	function _calculateCRE(
@@ -50,7 +52,8 @@ contract AppManager {
 		uint _createdAt,
 		uint _latitude,
 		uint _longitude,
-		bytes _itemInfo) internal {}
+		bytes _itemInfo) internal returns(uint amount){}
 
+	function _transferCRE(uint _amount, address _userAddress) internal {}
 
 }
