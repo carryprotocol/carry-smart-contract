@@ -1,6 +1,6 @@
-//pragma solidity ^0.4.23;
-//
-//contract StoreData {
+pragma solidity ^0.4.23;
+
+contract StoreData {
 //	// key: storeId
 //	mapping(uint => address) public storeAddress;
 //	mapping(uint => string) public storeName;
@@ -22,4 +22,4 @@
 //		) public onlyManager {}
 //
 //	// + 각각에 대한 setter
-//}
+}

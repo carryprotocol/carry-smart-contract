@@ -10,15 +10,16 @@ contract BrandToken {
 	mapping(bytes32 => mapping(address => bytes)) public signedSalts;
 	mapping(bytes32 => mapping(address => bytes)) public storeSignedKeys;
 	mapping(bytes32 => mapping(address => bytes)) public userSignedKeys;
-	mapping(bytes32 => mapping(address => uint)) public timestamps;
+	mapping(bytes32 => mapping(address => uint)) public timestamps; // TODO: timestamps랑 creators fix하자
+	mapping(bytes32 => mapping(address => address)) public creators;
 
 	// key: userAddress
 	mapping(address => bytes32[]) public btKeys;
 
-	address deviceManagerAddress;
+	address public deviceManagerAddress;
 
 	modifier onlyManager() {
-		require(msg.sender == true);
+		require(msg.sender == deviceManagerAddress);
 		_;
 	}
 
@@ -42,8 +43,9 @@ contract BrandToken {
 		signedSalts[_btKey][_userAddress] = _signedSalt;
 		storeSignedKeys[_btKey][_userAddress] = _storeSignedKey;
 		userSignedKeys[_btKey][_userAddress] = _userSignedKey;
-		timestamps[_btKey][_userAddress] = _timestamp; // ISSUE: timestamp 이렇게 할 것인가?
+		timestamps[_btKey][_userAddress] = _timestamp; // TODO: timestamp 이렇게 할 것인가?
+		creators[_btKey][_userAddress] = _deviceManager; // TODO: timestamp 이렇게 할 것인가?
 
-		btKeys[_userAddress].push(_btKey); // ISSUE: update 되면 이전 bt는 필요하지 않는데 삭제할 것인가?
+		btKeys[_userAddress].push(_btKey); // TODO: update 되면 이전 bt는 필요하지 않는데 삭제할 것인가?
 	}
 }
