@@ -1,6 +1,6 @@
 //pragma solidity ^0.4.23;
 //
-//contract UserData {
+//contract UserDataStorage {
 //	// key: userId
 //	mapping(uint => address) public userAddresses;
 //	mapping(uint => string) public userGenders;

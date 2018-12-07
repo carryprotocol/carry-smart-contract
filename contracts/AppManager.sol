@@ -1,13 +1,13 @@
 //pragma solidity ^0.4.23;
 //
-//import './PurchaseData.sol';
-//import './UserData.sol';
+//import './PurchaseDataStorage.sol';
+//import './UserDataStorage.sol';
 //import './ECVerify.sol';
 //
 //contract AppManager {
 //
-//	PurchaseData public purchaseDataStorage;
-//	UserData public userDataStorage;
+//	PurchaseDataStorage public purchaseDataStorage;
+//	UserDataStorage public userDataStorage;
 //
 //	// 해당 address가 승인된 App Manager인가?
 //	mapping(address => bool) public admins;

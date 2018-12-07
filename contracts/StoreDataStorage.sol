@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-contract StoreData {
+contract StoreDataStorage {
 //	// key: storeId
 //	mapping(uint => address) public storeAddress;
 //	mapping(uint => string) public storeName;
@@ -10,7 +10,7 @@ contract StoreData {
 //
 //	address public managerAddress;
 //
-//	constructor(address _managerAddress) public {}
+	constructor(address _managerAddress) public {}
 //
 //	function upsertData(
 //		uint _storeId,
