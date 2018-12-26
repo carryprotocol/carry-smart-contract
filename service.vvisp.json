@@ -1,24 +1,21 @@
 {
   "serviceName": "carry-poc",
   "variables" : {
-    "admin1_1": "SHOULD_BE_SET",
-    "admin1_2": "SHOULD_BE_SET",
-    "admin2_1": "SHOULD_BE_SET",
-    "admin2_2": "SHOULD_BE_SET"
+    "admin1": "0x6104e1C571c5095E04e8C26eFcA0Dd07ce8FCeBc"
   },
   "contracts": {
     "BrandToken": {
       "path": "contracts/BrandToken.sol",
       "constructorArguments": [
-        "${contracts.DeviceManager1.address}",
-        "${contracts.DeviceManager2.address}"
+        ["${contracts.DeviceManager.address}"]
       ]
     },
-    "DeviceManager1": {
+    "DeviceManager": {
       "path": "contracts/DeviceManager.sol",
       "constructorArguments": [
-        "${variables.admin1_1}",
-        "${variables.admin1_2}"
+        [
+          "${variables.admin1}"
+        ]
       ],
       "initialize": {
         "functionName": "initialize",
@@ -28,19 +25,44 @@
         ]
       }
     },
-    "DeviceManager2": {
-      "path": "contracts/DeviceManager.sol",
+    "AppManager": {
+      "path": "contracts/AppManager.sol",
       "constructorArguments": [
-        "${variables.admin2_1}",
-        "${variables.admin2_2}"
+        [
+          "${variables.admin1}"
+        ]
       ],
       "initialize": {
         "functionName": "initialize",
         "arguments": [
-          "${contracts.StoreDataStorage.address}",
-          "${contracts.BrandToken.address}"
+          "${contracts.PurchaseDataStorage.address}",
+          "${contracts.UserDataStorage.address}"
         ]
       }
+    },
+    "StoreDataStorage": {
+      "path": "contracts/StoreDataStorage.sol",
+      "constructorArguments": [
+        [
+          "${contracts.DeviceManager.address}"
+        ]
+      ]
+    },
+    "PurchaseDataStorage": {
+      "path": "contracts/PurchaseDataStorage.sol",
+      "constructorArguments": [
+        [
+          "${contracts.AppManager.address}"
+        ]
+      ]
+    },
+    "UserDataStorage": {
+      "path": "contracts/UserDataStorage.sol",
+      "constructorArguments": [
+        [
+          "${contracts.AppManager.address}"
+        ]
+      ]
     }
   }
 }

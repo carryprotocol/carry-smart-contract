@@ -1,10 +1,10 @@
 pragma solidity ^0.4.23;
 
-import "./libs/ECVerify.sol";
-import "./libs/Ownable.sol";
+import "../libs/ECVerify.sol";
+import "../ownable/ManagedStorage.sol";
 
 
-contract BrandToken is Ownable {
+contract BrandToken is ManagedStorage {
     // bytes32: btKeys, keccak256(storeAddress, btId)
     // address: userAddress
     // bytes: hash
@@ -18,32 +18,10 @@ contract BrandToken is Ownable {
 
     // key: userAddress
     mapping(address => bytes32[]) public btKeys;
-    mapping(address => bool) public deviceManagerAddresses;
 
     event BrandTokenUpserted(bytes32 _btKey, address _userAddress, uint _timestamp);
-    event AddDeviceManager(address _newDeviceManagerAddress);
-    event RemoveDeviceManger(address _deviceManagerAddress);
 
-    modifier onlyManagers() {
-        require(deviceManagerAddresses[msg.sender] == true, "Not registered Manager");
-        _;
-    }
-
-    constructor(address[] _deviceManagerAddresses) public {
-        setOwner(msg.sender);
-        for (uint i = 0; i < _deviceManagerAddresses.length; i++) {
-            deviceManagerAddresses[_deviceManagerAddresses[i]] = true;
-        }
-    }
-
-    function addDeviceManager(address _newDeviceManagerAddress) public onlyOwner {
-        deviceManagerAddresses[_newDeviceManagerAddress] = true;
-        emit AddDeviceManager(_newDeviceManagerAddress);
-    }
-
-    function removeDeviceManager(address _deviceManagerAddress) public onlyOwner {
-        deviceManagerAddresses[_deviceManagerAddress] = false;
-        emit RemoveDeviceManger(_deviceManagerAddress);
+    constructor(address[] _deviceManagerAddresses) public ManagedStorage(_deviceManagerAddresses) {
     }
 
     function upsertBalance(
@@ -56,10 +34,9 @@ contract BrandToken is Ownable {
         address _userAddress
         ) public onlyManagers
 	{
-        if (creators[_btKey] != address(0)) {
-            require(creators[_btKey] == msg.sender, "Cannot access to other device manager's brand token");
-        }
+        require(creators[_btKey] == address(0) || creators[_btKey] == msg.sender, "Cannot access to other device manager's brand token");
 
+        // 처음 생성시만 byKeys에 추가한다.
 		if (timestamps[_btKey][_userAddress] == 0) {
 			btKeys[_userAddress].push(_btKey);
 		}

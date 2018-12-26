@@ -7,14 +7,7 @@ require('chai')
 const BrandToken = artifacts.require('BrandToken');
 
 contract('BrandToken', accounts => {
-  const [
-    owner,
-    deviceManager1,
-    deviceManager2,
-    deviceManager3,
-    userAddress,
-    anyone
-  ] = accounts;
+  const [owner, deviceManager1, deviceManager2, userAddress, anyone] = accounts;
 
   beforeEach(async function() {
     this.brandToken = await BrandToken.new([deviceManager1, deviceManager2], {
@@ -27,77 +20,12 @@ contract('BrandToken', accounts => {
   });
 
   it('should register initial device manager addresses', async function() {
-    (await this.brandToken.deviceManagerAddresses(
-      deviceManager1
-    )).should.be.equal(true);
-    (await this.brandToken.deviceManagerAddresses(
-      deviceManager2
-    )).should.be.equal(true);
-  });
-
-  describe('Control device manager addresses', function() {
-    describe('#addDeviceManager()', function() {
-      it('should disallow anyone to add new device manager', async function() {
-        await this.brandToken.addDeviceManager(deviceManager3, { from: anyone })
-          .should.be.rejected;
-        await this.brandToken.addDeviceManager(deviceManager3, {
-          from: deviceManager1
-        }).should.be.rejected;
-      });
-
-      it('should add new device manager', async function() {
-        // pre-condition
-        (await this.brandToken.deviceManagerAddresses(
-          deviceManager1
-        )).should.be.equal(true);
-        (await this.brandToken.deviceManagerAddresses(
-          deviceManager2
-        )).should.be.equal(true);
-        (await this.brandToken.deviceManagerAddresses(
-          deviceManager3
-        )).should.be.equal(false);
-
-        // action
-        await this.brandToken.addDeviceManager(deviceManager3, { from: owner })
-          .should.be.fulfilled;
-
-        // post-condition
-        (await this.brandToken.deviceManagerAddresses(
-          deviceManager3
-        )).should.be.equal(true);
-      });
-    });
-
-    describe('#removeDeviceManager()', function() {
-      it('should disallow anyone to remove device manager', async function() {
-        await this.brandToken.removeDeviceManager(deviceManager2, {
-          from: anyone
-        }).should.be.rejected;
-        await this.brandToken.removeDeviceManager(deviceManager2, {
-          from: deviceManager1
-        }).should.be.rejected;
-      });
-
-      it('should remove device manager', async function() {
-        // pre-condition
-        (await this.brandToken.deviceManagerAddresses(
-          deviceManager1
-        )).should.be.equal(true);
-        (await this.brandToken.deviceManagerAddresses(
-          deviceManager2
-        )).should.be.equal(true);
-
-        // action
-        await this.brandToken.removeDeviceManager(deviceManager2, {
-          from: owner
-        }).should.be.fulfilled;
-
-        // post-condition
-        (await this.brandToken.deviceManagerAddresses(
-          deviceManager2
-        )).should.be.equal(false);
-      });
-    });
+    (await this.brandToken.managerAddresses(deviceManager1)).should.be.equal(
+      true
+    );
+    (await this.brandToken.managerAddresses(deviceManager2)).should.be.equal(
+      true
+    );
   });
 
   describe('Creating New BrandToken', function() {

@@ -5,7 +5,7 @@ library ECVerify {
     // sig[1...33] = bytes32 r
     // sig[33...] = bytes32 s
     function ecverify(bytes32 msgHash, bytes sig, address signer) internal pure {
-        require(sig.length == 65);
+        require(sig.length == 65, "wrong length");
         uint8 v;
         bytes32 r;
         bytes32 s;
@@ -21,7 +21,7 @@ library ECVerify {
         }
 
         address addr = ecrecover(msgHash, v, r, s);
-        require(addr != 0 && addr == signer); // verify
+        require(addr != 0 && addr == signer, "wrong signer"); // verify
     }
 
     function ecverify(string message, bytes sig, address signer) internal pure {
