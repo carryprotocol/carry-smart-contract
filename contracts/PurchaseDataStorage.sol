@@ -27,7 +27,7 @@
 //	...
 //	]을 serialize한 정보
 //*/
-//	constructor(address _managerAddress) public {}
+//	constructor(address[] _managerAddress) public {}
 //
 //	function upsertData(
 //		uint _purchaseId,

@@ -10,7 +10,7 @@ contract StoreDataStorage {
 //
 //	address public managerAddress;
 //
-	constructor(address _managerAddress) public {}
+	constructor(address[] _managerAddress) public {}
 //
 //	function upsertData(
 //		uint _storeId,

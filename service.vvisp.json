@@ -1,26 +1,45 @@
 {
-  "serviceName": "Haechi",
+  "serviceName": "carry-poc",
   "variables" : {
-    "varName": "constant"
+    "admin1_1": "SHOULD_BE_SET",
+    "admin1_2": "SHOULD_BE_SET",
+    "admin2_1": "SHOULD_BE_SET",
+    "admin2_2": "SHOULD_BE_SET"
   },
   "contracts": {
-    "ContractKeyName1": {
-      "upgradeable": true,
-      "path": "path/to/your/contract/ContractV0.sol",
-      "initialize": {
-        "functionName": "initialize",
-        "arguments": ["argument1", "argument2"]
-      }
-    },
-    "ContractKeyName2": {
-      "path": "path/to/your/contract/Contract.sol",
+    "BrandToken": {
+      "path": "contracts/BrandToken.sol",
       "constructorArguments": [
-        "${contracts.ContractKeyName1.address}",
-        "${variables.varName}"
+        "${contracts.DeviceManager1.address}",
+        "${contracts.DeviceManager2.address}"
+      ]
+    },
+    "DeviceManager1": {
+      "path": "contracts/DeviceManager.sol",
+      "constructorArguments": [
+        "${variables.admin1_1}",
+        "${variables.admin1_2}"
       ],
       "initialize": {
         "functionName": "initialize",
-        "arguments": ["argument1", "argument2"]
+        "arguments": [
+          "${contracts.StoreDataStorage.address}",
+          "${contracts.BrandToken.address}"
+        ]
+      }
+    },
+    "DeviceManager2": {
+      "path": "contracts/DeviceManager.sol",
+      "constructorArguments": [
+        "${variables.admin2_1}",
+        "${variables.admin2_2}"
+      ],
+      "initialize": {
+        "functionName": "initialize",
+        "arguments": [
+          "${contracts.StoreDataStorage.address}",
+          "${contracts.BrandToken.address}"
+        ]
       }
     }
   }
