@@ -2,9 +2,10 @@ pragma solidity ^0.4.23;
 
 import "../libs/ECVerify.sol";
 import "../ownable/ManagedStorage.sol";
+import "./TokenStake.sol";
 
 
-contract BrandToken is ManagedStorage {
+contract BrandPointToken is ManagedStorage {
     // bytes32: btKeys, keccak256(storeAddress, btId)
     // address: userAddress
     // bytes: hash
@@ -19,9 +20,21 @@ contract BrandToken is ManagedStorage {
     // key: userAddress
     mapping(address => bytes32[]) public btKeys;
 
-    event BrandTokenUpserted(bytes32 _btKey, address _userAddress, uint _timestamp);
+    TokenStake public tokenStake;
+    uint public minStakeBalance = 100; // TODO: should be fixed
 
-    constructor(address[] _deviceManagerAddresses) public ManagedStorage(_deviceManagerAddresses) {
+    event BrandPointTokenUpserted(bytes32 _btKey, address _userAddress, uint _timestamp);
+    event MinStakeBalanceChanged(uint newMinStakeBalance);
+
+    constructor(address[] _deviceManagerAddresses, address _tokenStake) public ManagedStorage(_deviceManagerAddresses) {
+        require(_tokenStake != address(0));
+        tokenStake = TokenStake(_tokenStake);
+    }
+
+    function setMinStakeBalance(uint _minStakeBalance) public onlyOwner {
+        require(_minStakeBalance >= 0);
+        minStakeBalance = _minStakeBalance;
+        emit MinStakeBalanceChanged(minStakeBalance);
     }
 
     function upsertBalance(
@@ -34,12 +47,13 @@ contract BrandToken is ManagedStorage {
         address _userAddress
         ) public onlyManagers
 	{
-        require(creators[_btKey] == address(0) || creators[_btKey] == msg.sender, "Cannot access to other device manager's brand token");
+        require(tokenStake.stake(msg.sender) >= minStakeBalance);
+        require(creators[_btKey] == address(0) || creators[_btKey] == msg.sender, "Cannot access to other device manager's brand point token");
 
         // 처음 생성시만 byKeys에 추가한다.
-		if (timestamps[_btKey][_userAddress] == 0) {
-			btKeys[_userAddress].push(_btKey);
-		}
+        if (timestamps[_btKey][_userAddress] == 0) {
+            btKeys[_userAddress].push(_btKey);
+        }
 
         signedBalances[_btKey][_userAddress] = _signedBalance;
         signedSalts[_btKey][_userAddress] = _signedSalt;
@@ -48,7 +62,7 @@ contract BrandToken is ManagedStorage {
         timestamps[_btKey][_userAddress] = _timestamp;
         creators[_btKey] = msg.sender;
 
-        emit BrandTokenUpserted(_btKey, _userAddress, _timestamp);
+        emit BrandPointTokenUpserted(_btKey, _userAddress, _timestamp);
     }
 
     function getAllBTKeys(address _user) public view returns(bytes32[]) {

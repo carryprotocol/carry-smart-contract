@@ -4,33 +4,38 @@
     "admin1": "0x6104e1C571c5095E04e8C26eFcA0Dd07ce8FCeBc"
   },
   "contracts": {
-    "BrandToken": {
-      "path": "contracts/BrandToken.sol",
+    "BrandPointToken": {
+      "path": "contracts/token/BrandPointToken.sol",
       "constructorArguments": [
-        ["${contracts.DeviceManager.address}"]
+        ["${contracts.DeviceManager.address}"],
+        "${contracts.TokenStake.address}"
       ]
     },
     "DeviceManager": {
-      "path": "contracts/DeviceManager.sol",
+      "path": "contracts/managers/DeviceManager.sol",
       "constructorArguments": [
         [
           "${variables.admin1}"
-        ]
+        ],
+        "${contracts.TokenStake.address}",
+        "${contracts.CarryToken.address}"
       ],
       "initialize": {
         "functionName": "initialize",
         "arguments": [
           "${contracts.StoreDataStorage.address}",
-          "${contracts.BrandToken.address}"
+          "${contracts.BrandPointToken.address}"
         ]
       }
     },
     "AppManager": {
-      "path": "contracts/AppManager.sol",
+      "path": "contracts/managers/AppManager.sol",
       "constructorArguments": [
         [
           "${variables.admin1}"
-        ]
+        ],
+        "${contracts.TokenStake.address}",
+        "${contracts.CarryToken.address}"
       ],
       "initialize": {
         "functionName": "initialize",
@@ -41,7 +46,7 @@
       }
     },
     "StoreDataStorage": {
-      "path": "contracts/StoreDataStorage.sol",
+      "path": "contracts/storage/StoreDataStorage.sol",
       "constructorArguments": [
         [
           "${contracts.DeviceManager.address}"
@@ -49,7 +54,7 @@
       ]
     },
     "PurchaseDataStorage": {
-      "path": "contracts/PurchaseDataStorage.sol",
+      "path": "contracts/storage/PurchaseDataStorage.sol",
       "constructorArguments": [
         [
           "${contracts.AppManager.address}"
@@ -57,11 +62,27 @@
       ]
     },
     "UserDataStorage": {
-      "path": "contracts/UserDataStorage.sol",
+      "path": "contracts/storage/UserDataStorage.sol",
       "constructorArguments": [
         [
           "${contracts.AppManager.address}"
         ]
+      ]
+    },
+    "CarryToken": {
+      "path": "contracts/token/CarryToken.sol",
+      "initialize": {
+        "functionName": "mint",
+        "arguments": [
+          "${variables.owner}",
+          10000000000
+        ]
+      }
+    },
+    "TokenStake": {
+      "path": "contracts/token/TokenStake.sol",
+      "constructorArguments": [
+        "${contracts.CarryToken.address}"
       ]
     }
   }

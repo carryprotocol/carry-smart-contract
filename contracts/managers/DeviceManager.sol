@@ -2,23 +2,23 @@ pragma solidity ^0.4.23;
 
 import "../storage/StoreDataStorage.sol";
 import "../libs/ECVerify.sol";
-import "../token/BrandToken.sol";
+import "../token/BrandPointToken.sol";
 import "../ownable/Manager.sol";
 
 
 contract DeviceManager is Manager {
-    BrandToken public brandToken;
+    BrandPointToken public brandPointToken;
     StoreDataStorage public storeDataStorage;
 
     event RegisterStoreDataStorage(address _storeDataStorage);
-    event RegisterBrandToken(address _brandToken);
+    event RegisterBrandPointToken(address _brandPointToken);
 
-    constructor(address[] _admins) public Manager(_admins) {
+    constructor(address[] _admins, address _tokenStake, address _carryToken) public Manager(_admins, _tokenStake, _carryToken) {
     }
 
-    function initialize(address _storeDataStorage, address _brandToken) public onlyAdmins {
+    function initialize(address _storeDataStorage, address _brandPointToken) public onlyAdmins {
         registerStoreDataStorage(_storeDataStorage);
-        registerBrandToken(_brandToken);
+        registerBrandPointToken(_brandPointToken);
     }
 
     // TODO: If upgradeable, it goes to the constructor
@@ -28,9 +28,9 @@ contract DeviceManager is Manager {
     }
 
     // TODO: If upgradeable, it goes to the constructor
-    function registerBrandToken(address _brandToken) public onlyAdmins {
-        brandToken = BrandToken(_brandToken);
-        emit RegisterBrandToken(_brandToken);
+    function registerBrandPointToken(address _brandPointToken) public onlyAdmins {
+        brandPointToken = BrandPointToken(_brandPointToken);
+        emit RegisterBrandPointToken(_brandPointToken);
     }
 
     function upsertBalance(
@@ -56,7 +56,7 @@ contract DeviceManager is Manager {
         );
         ECVerify.ecverify(message, _storeSignature, _storeAddress);
 
-        brandToken.upsertBalance(
+        brandPointToken.upsertBalance(
 			_signedBalance,
 			_signedSalt,
 			_storeSignedSymKey,

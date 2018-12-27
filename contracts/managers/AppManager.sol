@@ -1,28 +1,30 @@
 pragma solidity ^0.4.23;
 
-import '../storage/PurchaseDataStorage.sol';
-import '../storage/UserDataStorage.sol';
-import '../libs/ECVerify.sol';
+import "../storage/PurchaseDataStorage.sol";
+import "../storage/UserDataStorage.sol";
+import "../libs/ECVerify.sol";
 import "../ownable/Manager.sol";
 
+
 contract AppManager is Manager {
-	PurchaseDataStorage public purchaseDataStorage;
-	UserDataStorage public userDataStorage;
+    PurchaseDataStorage public purchaseDataStorage;
+    UserDataStorage public userDataStorage;
 
     event RegisterPurchaseDataStorage(address _purchaseDataStorage);
     event RegisterUserDataStorage(address _userDataStorage);
+    event RewardTokenForPurchaseData(address _receiver, uint _amount);
 
-    constructor(address[] _admins) public Manager(_admins) {
+    constructor(address[] _admins, address _tokenStake, address _carryToken) public Manager(_admins, _tokenStake, _carryToken) {
     }
 
-	// TODO: if upgradeable, it goes to the constructor
-	function registerPurchaseDataStorage(address _purchaseDataStorage) public onlyAdmins {
+    // TODO: if upgradeable, it goes to the constructor
+    function registerPurchaseDataStorage(address _purchaseDataStorage) public onlyAdmins {
         purchaseDataStorage = PurchaseDataStorage(_purchaseDataStorage);
         emit RegisterPurchaseDataStorage(_purchaseDataStorage);
     }
 
     // TODO: if upgradeable, it goes to the constructor
-	function registerUserDataStorage(address _userDataStorage) public onlyAdmins {
+    function registerUserDataStorage(address _userDataStorage) public onlyAdmins {
         userDataStorage = UserDataStorage(_userDataStorage);
         emit RegisterUserDataStorage(_userDataStorage);
     }
@@ -32,8 +34,8 @@ contract AppManager is Manager {
         registerUserDataStorage(_userDataStorage);
     }
 
-	function upsertPurchaseData(
-		uint _purchaseId,
+    function upsertPurchaseData(
+        uint _purchaseId,
         uint _userId,
         string _paymentMethod,
         uint _createdAt,
@@ -41,9 +43,21 @@ contract AppManager is Manager {
         uint _storeLongitude,
         bytes _items,
         address _userAddress,
-		bytes _userSignature
-		) public onlyAdmins
+        bytes _userSignature
+        ) public onlyAdmins
     {
+        uint amount = calculateCRE(
+            _purchaseId,
+            _userId,
+            _userAddress,
+            _paymentMethod,
+            _createdAt,
+            _storeLatitude,
+            _storeLongitude,
+            _items
+        );
+        require(tokenStake.stake(address(this)) >= amount, "Not enough stake");
+
         bytes memory message = abi.encodePacked(
             _purchaseId,
             _userId,
@@ -66,11 +80,13 @@ contract AppManager is Manager {
             _items
         );
 
-//		uint amount = _calculateCRE(datas...);
-//		_transferCRE(amount, userAddress); //
-	}
+        if (amount > 0) {
+            tokenStake.withdrawStake(_userAddress, amount);
+            emit RewardTokenForPurchaseData(_userAddress, amount);
+        }
+    }
 
-	function upsertUserData(
+    function upsertUserData(
         uint _userId,
         string _userGender,
         uint _userBirthYear,
@@ -79,8 +95,8 @@ contract AppManager is Manager {
         string _userCountry,
         string _userJob,
         address _userAddress,
-		bytes _userSignature
-		) public onlyAdmins
+        bytes _userSignature
+        ) public onlyAdmins
     {
         bytes memory message = abi.encodePacked(
             _userId,
@@ -103,17 +119,25 @@ contract AppManager is Manager {
             _userCountry,
             _userJob
         );
-	}
+    }
 
-//	function _calculateCRE(
-//		uint _userId,
-//		address _userAddress,
-//		string _paymentMethod,
-//		uint _createdAt,
-//		uint _latitude,
-//		uint _longitude,
-//		bytes _itemInfo) internal returns(uint amount){}
-//
-//	function _transferCRE(uint _amount, address _userAddress) internal {}
+    function calculateCRE(
+        uint _purchaseId,
+        uint _userId,
+        address _userAddress,
+        string _paymentMethod,
+        uint _createdAt,
+        uint _storeLatitude,
+        uint _storeLongitude,
+        bytes _items
+        ) public view returns(uint)
+    {
+        uint amount;
 
+        // TODO: fill some logic depends on given data
+        amount = 10; // 1 token for test
+        //
+
+        return amount;
+    }
 }

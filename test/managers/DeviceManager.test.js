@@ -6,8 +6,10 @@ require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
+const CarryToken = artifacts.require('CarryToken');
+const TokenStake = artifacts.require('TokenStake');
 const DeviceManager = artifacts.require('DeviceManager');
-const BrandToken = artifacts.require('BrandToken');
+const BrandPointToken = artifacts.require('BrandPointToken');
 const StoreDataStorage = artifacts.require('StoreDataStorage');
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
@@ -18,22 +20,50 @@ contract('DeviceManager', accounts => {
     '0xb178cf12d4126ea1db48ca32e3ce6743580ca6646391996032fc76652d699973';
 
   beforeEach(async function() {
-    this.deviceManager = await DeviceManager.new([owner], { from: owner });
-    this.brandToken = await BrandToken.new([this.deviceManager.address], {
+    this.carryToken = await CarryToken.new({ from: owner });
+    await this.carryToken.mint(owner, 10000000000, { from: owner });
+    this.tokenStake = await TokenStake.new(this.carryToken.address, {
       from: owner
     });
+
+    this.deviceManager = await DeviceManager.new(
+      [owner],
+      this.tokenStake.address,
+      this.carryToken.address,
+      { from: owner }
+    );
+
+    this.brandPointToken = await BrandPointToken.new(
+      [this.deviceManager.address],
+      this.tokenStake.address,
+      {
+        from: owner
+      }
+    );
     this.storeDataStorage = await StoreDataStorage.new(
       [this.deviceManager.address],
       { from: owner }
     );
   });
 
-  describe('Ownership', function() {
+  describe('Initialize', function() {
     it('should have right initial admin', async function() {
       (await this.deviceManager.admins(owner)).should.be.equal(true);
       (await this.deviceManager.admins(anyone)).should.be.equal(false);
 
       (await this.deviceManager.adminNumber()).should.be.bignumber.equal(1);
+    });
+
+    it('should have right token contract address', async function() {
+      (await this.deviceManager.carryToken()).should.be.equal(
+        this.carryToken.address
+      );
+    });
+
+    it('should have right token stake contract address', async function() {
+      (await this.deviceManager.tokenStake()).should.be.equal(
+        this.tokenStake.address
+      );
     });
 
     it('should register address of StoreDataStorage', async function() {
@@ -60,19 +90,27 @@ contract('DeviceManager', accounts => {
 
     it('should register address of BrandToken', async function() {
       // pre-condition
-      (await this.deviceManager.brandToken()).should.be.equal(ZERO_ADDRESS);
-      await this.deviceManager.registerBrandToken(this.brandToken.address, {
-        from: anyone
-      }).should.be.rejected;
+      (await this.deviceManager.brandPointToken()).should.be.equal(
+        ZERO_ADDRESS
+      );
+      await this.deviceManager.registerBrandPointToken(
+        this.brandPointToken.address,
+        {
+          from: anyone
+        }
+      ).should.be.rejected;
 
       // action
-      await this.deviceManager.registerBrandToken(this.brandToken.address, {
-        from: owner
-      }).should.be.fulfilled;
+      await this.deviceManager.registerBrandPointToken(
+        this.brandPointToken.address,
+        {
+          from: owner
+        }
+      ).should.be.fulfilled;
 
       // post-condition
-      (await this.deviceManager.brandToken()).should.be.equal(
-        this.brandToken.address
+      (await this.deviceManager.brandPointToken()).should.be.equal(
+        this.brandPointToken.address
       );
     });
 
@@ -81,17 +119,19 @@ contract('DeviceManager', accounts => {
       (await this.deviceManager.storeDataStorage()).should.be.equal(
         ZERO_ADDRESS
       );
-      (await this.deviceManager.brandToken()).should.be.equal(ZERO_ADDRESS);
+      (await this.deviceManager.brandPointToken()).should.be.equal(
+        ZERO_ADDRESS
+      );
       await this.deviceManager.initialize(
         this.storeDataStorage.address,
-        this.brandToken.address,
+        this.brandPointToken.address,
         { from: anyone }
       ).should.be.rejected;
 
       // action
       await this.deviceManager.initialize(
         this.storeDataStorage.address,
-        this.brandToken.address,
+        this.brandPointToken.address,
         { from: owner }
       ).should.be.fulfilled;
 
@@ -99,8 +139,8 @@ contract('DeviceManager', accounts => {
       (await this.deviceManager.storeDataStorage()).should.be.equal(
         this.storeDataStorage.address
       );
-      (await this.deviceManager.brandToken()).should.be.equal(
-        this.brandToken.address
+      (await this.deviceManager.brandPointToken()).should.be.equal(
+        this.brandPointToken.address
       );
     });
   });
@@ -203,7 +243,7 @@ contract('DeviceManager', accounts => {
     });
   });
 
-  describe('BrandToken', function() {
+  describe('BrandPointToken', function() {
     describe('#upsertBalance()', function() {
       const _signedBalance = '0x123123'; // bytes
       const _signedSalt = '0x12412134'; // bytes
@@ -225,11 +265,25 @@ contract('DeviceManager', accounts => {
       const wrongKey =
         '0xb178cf12d4126ea1db48ca32e3ce6743580ca6646391996032fc76652d699935';
       const dummyBytes = '0x8488484';
+      const DEPOSIT_AMOUNT = 150;
 
       beforeEach(async function() {
-        await this.deviceManager.registerBrandToken(this.brandToken.address, {
+        await this.deviceManager.registerBrandPointToken(
+          this.brandPointToken.address,
+          {
+            from: owner
+          }
+        ).should.be.fulfilled;
+        await this.carryToken.approve(this.tokenStake.address, DEPOSIT_AMOUNT, {
           from: owner
         }).should.be.fulfilled;
+        await this.tokenStake.depositStake(
+          this.deviceManager.address,
+          DEPOSIT_AMOUNT,
+          {
+            from: owner
+          }
+        ).should.be.fulfilled;
       });
 
       it('should reject wrong admin', async function() {
@@ -244,6 +298,23 @@ contract('DeviceManager', accounts => {
           storeAddress,
           createSignature(message, STORE_PRIVATE_KEY),
           { from: anyone }
+        ).should.be.rejected;
+      });
+
+      it('should reject if manager has not enough stake', async function() {
+        await this.deviceManager.withdrawAllStake(owner, { from: owner }).should
+          .be.fulfilled;
+        await this.deviceManager.upsertBalance(
+          _signedBalance,
+          _signedSalt,
+          _storeSignedSymKey,
+          _userSignedSymKey,
+          _timestamp,
+          _btKey,
+          userAddress,
+          storeAddress,
+          createSignature(message, STORE_PRIVATE_KEY),
+          { from: owner }
         ).should.be.rejected;
       });
 
@@ -307,32 +378,34 @@ contract('DeviceManager', accounts => {
           { from: owner }
         ).should.be.fulfilled;
 
-        (await this.brandToken.signedBalances(
+        (await this.brandPointToken.signedBalances(
           _btKey,
           userAddress
         )).should.be.equal(_signedBalance);
-        (await this.brandToken.signedSalts(
+        (await this.brandPointToken.signedSalts(
           _btKey,
           userAddress
         )).should.be.equal(_signedSalt);
-        (await this.brandToken.storeSignedKeys(
+        (await this.brandPointToken.storeSignedKeys(
           _btKey,
           userAddress
         )).should.be.equal(_storeSignedSymKey);
-        (await this.brandToken.userSignedKeys(
+        (await this.brandPointToken.userSignedKeys(
           _btKey,
           userAddress
         )).should.be.equal(_userSignedSymKey);
-        (await this.brandToken.timestamps(
+        (await this.brandPointToken.timestamps(
           _btKey,
           userAddress
         )).should.be.bignumber.equal(_timestamp);
-        (await this.brandToken.creators(_btKey)).should.be.equal(
+        (await this.brandPointToken.creators(_btKey)).should.be.equal(
           this.deviceManager.address
         );
 
-        (await this.brandToken.btKeys(userAddress, 0)).should.be.equal(_btKey);
-        const btKeys = await this.brandToken.getAllBTKeys(userAddress);
+        (await this.brandPointToken.btKeys(userAddress, 0)).should.be.equal(
+          _btKey
+        );
+        const btKeys = await this.brandPointToken.getAllBTKeys(userAddress);
         btKeys.should.have.lengthOf(1);
         btKeys[0].should.be.equal(_btKey);
       });

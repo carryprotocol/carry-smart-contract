@@ -7,6 +7,8 @@ require('chai')
   .should();
 
 const AppManager = artifacts.require('AppManager');
+const CarryToken = artifacts.require('CarryToken');
+const TokenStake = artifacts.require('TokenStake');
 const PurchaseDataStorage = artifacts.require('PurchaseDataStorage');
 const UserDataStorage = artifacts.require('UserDataStorage');
 
@@ -18,12 +20,22 @@ contract('AppManager', accounts => {
     '0xb178cf12d4126ea1db48ca32e3ce6743580ca6646391996032fc76652d699974';
 
   beforeEach(async function() {
-    this.appManager = await AppManager.new([owner], { from: owner });
+    this.carryToken = await CarryToken.new({ from: owner });
+    await this.carryToken.mint(owner, 10000000000, { from: owner });
+    this.tokenStake = await TokenStake.new(this.carryToken.address, {
+      from: owner
+    });
+
+    this.appManager = await AppManager.new(
+      [owner],
+      this.tokenStake.address,
+      this.carryToken.address,
+      { from: owner }
+    );
+
     this.purchaseDataStorage = await PurchaseDataStorage.new(
       [this.appManager.address],
-      {
-        from: owner
-      }
+      { from: owner }
     );
     this.userDataStorage = await UserDataStorage.new(
       [this.appManager.address],
@@ -31,12 +43,24 @@ contract('AppManager', accounts => {
     );
   });
 
-  describe('Ownership', function() {
+  describe('Initialize', function() {
     it('should have right initial admin', async function() {
       (await this.appManager.admins(owner)).should.be.equal(true);
       (await this.appManager.admins(anyone)).should.be.equal(false);
 
       (await this.appManager.adminNumber()).should.be.bignumber.equal(1);
+    });
+
+    it('should have right token contract address', async function() {
+      (await this.appManager.carryToken()).should.be.equal(
+        this.carryToken.address
+      );
+    });
+
+    it('should have right token stake contract address', async function() {
+      (await this.appManager.tokenStake()).should.be.equal(
+        this.tokenStake.address
+      );
     });
 
     it('should register address of PurchaseDataStorage', async function() {
@@ -257,7 +281,8 @@ contract('AppManager', accounts => {
 
       const wrongKey =
         '0xb178cf12d4126ea1db48ca32e3ce6743580ca6646391996032fc76652d699935';
-      const dummyBytes = '0x8488484';
+
+      const DEPOSIT_AMOUNT = 50;
 
       beforeEach(async function() {
         await this.appManager.registerPurchaseDataStorage(
@@ -266,6 +291,34 @@ contract('AppManager', accounts => {
             from: owner
           }
         ).should.be.fulfilled;
+
+        await this.carryToken.approve(this.tokenStake.address, DEPOSIT_AMOUNT, {
+          from: owner
+        }).should.be.fulfilled;
+        await this.tokenStake.depositStake(
+          this.appManager.address,
+          DEPOSIT_AMOUNT,
+          {
+            from: owner
+          }
+        ).should.be.fulfilled;
+      });
+
+      it('should reject when stake is not enough', async function() {
+        await this.appManager.withdrawAllStake(owner, { from: owner }).should.be
+          .fulfilled;
+        await this.appManager.upsertPurchaseData(
+          purchaseId,
+          userId,
+          paymentMethod,
+          createdAt,
+          storeLatitude,
+          storeLongitude,
+          items,
+          userAddress,
+          createSignature(message, USER_PRIVATE_KEY),
+          { from: owner }
+        ).should.be.rejected;
       });
 
       it('should reject wrong admin', async function() {
@@ -329,6 +382,26 @@ contract('AppManager', accounts => {
       });
 
       it('should upsert new balance of user', async function() {
+        // pre-condition
+        const initialUserBalance = await this.carryToken.balanceOf(userAddress);
+        const initialManagerContractStake = await this.tokenStake.stake(
+          this.appManager.address
+        );
+        const initialStakeContractBalance = await this.carryToken.balanceOf(
+          this.tokenStake.address
+        );
+
+        const rewardAmount = await this.appManager.calculateCRE(
+          purchaseId,
+          userId,
+          userAddress,
+          paymentMethod,
+          createdAt,
+          storeLatitude,
+          storeLongitude,
+          items
+        );
+
         // action
         await this.appManager.upsertPurchaseData(
           purchaseId,
@@ -364,6 +437,20 @@ contract('AppManager', accounts => {
         )).should.be.bignumber.equal(storeLongitude);
         (await this.purchaseDataStorage.items(purchaseId)).should.be.equal(
           items
+        );
+
+        (await this.carryToken.balanceOf(
+          userAddress
+        )).should.be.bignumber.equal(initialUserBalance + rewardAmount);
+        (await this.tokenStake.stake(
+          this.appManager.address
+        )).should.be.bignumber.equal(
+          initialManagerContractStake - rewardAmount
+        );
+        (await this.carryToken.balanceOf(
+          this.tokenStake.address
+        )).should.be.bignumber.equal(
+          initialStakeContractBalance - rewardAmount
         );
       });
     });

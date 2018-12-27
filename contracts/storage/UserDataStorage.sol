@@ -2,32 +2,33 @@ pragma solidity ^0.4.23;
 
 import "../ownable/ManagedStorage.sol";
 
-contract UserDataStorage is ManagedStorage{
-	// key: userId
-	mapping(uint => address) public userAddresses;
-	mapping(uint => string) public userGenders;
-	mapping(uint => uint) public userBirthYears; // timestamp
-	mapping(uint => uint) public userBirthMonths; // timestamp
-	mapping(uint => uint) public userBirthDays; // timestamp
-	mapping(uint => string) public userCountries; // 거주 지역
-	mapping(uint => string) public userJobs; // 직장
+
+contract UserDataStorage is ManagedStorage {
+    // key: userId
+    mapping(uint => address) public userAddresses;
+    mapping(uint => string) public userGenders;
+    mapping(uint => uint) public userBirthYears; // timestamp
+    mapping(uint => uint) public userBirthMonths; // timestamp
+    mapping(uint => uint) public userBirthDays; // timestamp
+    mapping(uint => string) public userCountries; // 거주 지역
+    mapping(uint => string) public userJobs; // 직장
 
     event UserDataUpserted(uint _userId, address _userAddress, string _userGender, uint _userBirthYear, uint _userBirthMonth, uint _userBirthDay, string _userCountry, string _userJob);
 
-	constructor(address[] _appManagerAddress) public ManagedStorage(_appManagerAddress) {}
+    constructor(address[] _appManagerAddress) public ManagedStorage(_appManagerAddress) {}
 
-	function upsertData(
-		uint _userId,
-		address _userAddress,
-		string _userGender,
-		uint _userBirthYear,
-		uint _userBirthMonth,
-		uint _userBirthDay,
-		string _userCountry,
+    function upsertData(
+        uint _userId,
+        address _userAddress,
+        string _userGender,
+        uint _userBirthYear,
+        uint _userBirthMonth,
+        uint _userBirthDay,
+        string _userCountry,
         string _userJob
-		) public onlyManagers
-	{
-		userAddresses[_userId] = _userAddress;
+    ) public onlyManagers
+    {
+        userAddresses[_userId] = _userAddress;
         userGenders[_userId] = _userGender;
         userBirthYears[_userId] = _userBirthYear;
         userBirthMonths[_userId] = _userBirthMonth;
