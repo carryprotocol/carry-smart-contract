@@ -2,9 +2,10 @@ pragma solidity ^0.4.23;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./CarryToken.sol";
+import "./ITokenStake.sol";
 
 
-contract TokenStake {
+contract TokenStake is ITokenStake {
     using SafeMath for uint;
 
     mapping(address => uint) public stake;
