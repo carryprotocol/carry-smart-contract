@@ -1,14 +1,12 @@
 pragma solidity ^0.4.23;
 
 import "../libs/Ownable.sol";
+import "./IManagedStorage.sol";
 
 
-contract ManagedStorage is Ownable {
+contract ManagedStorage is Ownable, IManagedStorage {
 
     mapping(address => bool) public managerAddresses;
-
-    event AddManager(address _newManagerAddress);
-    event RemoveManager(address _managerAddress);
 
     modifier onlyManagers() {
         require(managerAddresses[msg.sender] == true, "Not registered Manager");

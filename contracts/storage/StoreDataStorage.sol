@@ -1,16 +1,15 @@
 pragma solidity ^0.4.23;
 
 import "../ownable/ManagedStorage.sol";
+import "./IStoreDataStorage.sol";
 
 
-contract StoreDataStorage is ManagedStorage {
+contract StoreDataStorage is ManagedStorage, IStoreDataStorage {
     // key: storeId
     mapping(uint => address) public storeAddresses;
     mapping(uint => uint) public storeLatitudes;
     mapping(uint => uint) public storeLongitudes;
     mapping(uint => string) public storeCategories;
-
-    event StoreDataUpserted(uint _storeId, address _storeAddress, uint _storeLatitude, uint _storeLongitude, string _storeCategory);
 
     constructor(address[] _deviceManagerAddresses) public ManagedStorage(_deviceManagerAddresses) {
     }

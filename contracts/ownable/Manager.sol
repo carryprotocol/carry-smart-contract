@@ -3,9 +3,10 @@ pragma solidity ^0.4.24;
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "../token/TokenStake.sol";
 import "../token/CarryToken.sol";
+import "./IManager.sol";
 
 
-contract Manager {
+contract Manager is IManager {
     using SafeMath for uint;
 
     TokenStake public tokenStake;
@@ -13,9 +14,6 @@ contract Manager {
 
     mapping(address => bool) public admins;
     uint public adminNumber = 0;
-
-    event RegisterAdmin(address _newAdmin, uint _adminNumber);
-    event RemoveAdmin(address _admin, uint _adminNumber);
 
     modifier onlyAdmins() {
         require(admins[msg.sender] == true, "Wrong admin");

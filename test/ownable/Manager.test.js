@@ -28,150 +28,149 @@ contract('Manager', accounts => {
     );
   });
 
-  describe('Initialize', function() {
-    it('should have right initial admin', async function() {
+  describe('admins()', function() {
+    it('admin 여부를 판단하는데 성공합니다.', async function() {
       (await this.manager.admins(owner)).should.be.equal(true);
       (await this.manager.admins(anyone)).should.be.equal(false);
+    });
+  });
 
+  describe('adminNumber()', function() {
+    it('올바른 admin의 수를 가져오는데 성공합니다.', async function() {
       (await this.manager.adminNumber()).should.be.bignumber.equal(1);
     });
+  });
 
-    it('should have right token contract address', async function() {
+  describe('carryToken()', function() {
+    it('올바른 carry token의 주소를 가져오는데 성공합니다.', async function() {
       (await this.manager.carryToken()).should.be.equal(
         this.carryToken.address
       );
     });
+  });
 
-    it('should have right token stake contract address', async function() {
+  describe('tokenStake()', function() {
+    it('올바른 tokenStake의 주소를 가져오는데 성공합니다.', async function() {
       (await this.manager.tokenStake()).should.be.equal(
         this.tokenStake.address
       );
     });
   });
 
-  describe('Ownership', function() {
-    describe('#registerAdmin()', function() {
-      it('should disallow anyone to register new admin', async function() {
-        await this.manager.registerAdmin(admin, { from: anyone }).should.be
-          .rejected;
-      });
-
-      it('should disallow to register duplicated admin', async function() {
-        await this.manager.registerAdmin(owner, { from: owner }).should.be
-          .rejected;
-      });
-
-      it('should register new admin', async function() {
-        // pre-condition
-        (await this.manager.admins(admin)).should.be.equal(false);
-
-        // action
-        await this.manager.registerAdmin(admin, { from: owner }).should.be
-          .fulfilled;
-
-        // post-condition
-        (await this.manager.admins(admin)).should.be.equal(true);
-        (await this.manager.adminNumber()).should.be.bignumber.equal(2);
-      });
+  describe('registerAdmin()', function() {
+    it('허가되지 않은 주소가 새로운 admin 등록을 시도하면 실패합니다.', async function() {
+      await this.manager.registerAdmin(admin, { from: anyone }).should.be
+        .rejected;
     });
 
-    describe('#removeAdmin()', function() {
-      beforeEach(async function() {
-        await this.manager.registerAdmin(admin, {
-          from: owner
-        }).should.be.fulfilled;
-      });
+    it('이미 등록된 주소를 새로운 admin으로 등록을 시도하면 실패합니다.', async function() {
+      await this.manager.registerAdmin(owner, { from: owner }).should.be
+        .rejected;
+    });
 
-      it('should disallow anyone to remove admin', async function() {
-        await this.manager.removeAdmin(admin, { from: anyone }).should.be
-          .rejected;
-      });
+    it('새로운 admin 등록을 성공합니다.', async function() {
+      // pre-condition
+      (await this.manager.admins(admin)).should.be.equal(false);
 
-      it('should disallow to remove nonexistent admin', async function() {
-        await this.manager.removeAdmin(anyone, { from: owner }).should.be
-          .rejected;
-      });
+      // action
+      await this.manager.registerAdmin(admin, { from: owner }).should.be
+        .fulfilled;
 
-      it('should disallow all admins', async function() {
-        // pre-condition
-        await this.manager.removeAdmin(admin, { from: owner }).should.be
-          .fulfilled;
-        (await this.manager.adminNumber()).should.be.bignumber.equal(1);
-
-        // action
-        await this.manager.removeAdmin(owner, { from: owner }).should.be
-          .rejected;
-      });
-
-      it('should remove admin', async function() {
-        // pre-condition
-        (await this.manager.admins(admin)).should.be.equal(true);
-        (await this.manager.adminNumber()).should.be.bignumber.equal(2);
-
-        // action
-        await this.manager.removeAdmin(admin, { from: owner }).should.be
-          .fulfilled;
-
-        // post-condition
-        (await this.manager.admins(admin)).should.be.equal(false);
-        (await this.manager.adminNumber()).should.be.bignumber.equal(1);
-      });
+      // post-condition
+      (await this.manager.admins(admin)).should.be.equal(true);
+      (await this.manager.adminNumber()).should.be.bignumber.equal(2);
     });
   });
 
-  describe('Stake', function() {
-    describe('#withdrawStake()', function() {
-      const DEPOSIT_AMOUNT = 50;
+  describe('removeAdmin()', function() {
+    beforeEach(async function() {
+      await this.manager.registerAdmin(admin, {
+        from: owner
+      }).should.be.fulfilled;
+    });
 
-      beforeEach(async function() {
-        await this.carryToken.approve(this.tokenStake.address, DEPOSIT_AMOUNT, {
-          from: owner
-        }).should.be.fulfilled;
-        await this.tokenStake.depositStake(
-          this.manager.address,
-          DEPOSIT_AMOUNT,
-          {
-            from: owner
-          }
-        ).should.be.fulfilled;
-      });
+    it('허가되지 않은 주소가 admin 삭제를 시도하면 실패합니다.', async function() {
+      await this.manager.removeAdmin(admin, { from: anyone }).should.be
+        .rejected;
+    });
 
-      it('should disallow zero address receiver', async function() {
-        await this.manager.withdrawAllStake(ZERO_ADDRESS, { from: owner })
-          .should.be.rejected;
-      });
+    it('등록되지 않은 admin 삭제를 시도하면 실패합니다.', async function() {
+      await this.manager.removeAdmin(anyone, { from: owner }).should.be
+        .rejected;
+    });
 
-      it('should disallow anyone to withdraw stake', async function() {
-        await this.manager.withdrawAllStake(owner, { from: anyone }).should.be
-          .rejected;
-      });
+    it('남은 admin의 수가 한 명일 때 admin 삭제를 시도하면 실패합니다.', async function() {
+      // pre-condition
+      await this.manager.removeAdmin(admin, { from: owner }).should.be
+        .fulfilled;
+      (await this.manager.adminNumber()).should.be.bignumber.equal(1);
 
-      it('should withdraw all stake from stake contract', async function() {
-        // pre-condition
-        (await this.tokenStake.stake(
-          this.manager.address
-        )).should.be.bignumber.equal(DEPOSIT_AMOUNT);
-        (await this.carryToken.balanceOf(
-          this.tokenStake.address
-        )).should.be.bignumber.equal(DEPOSIT_AMOUNT);
-        const initialBalance = (await this.carryToken.balanceOf(
-          owner
-        )).toNumber();
+      // action
+      await this.manager.removeAdmin(owner, { from: owner }).should.be.rejected;
+    });
 
-        await this.manager.withdrawAllStake(owner, { from: owner }).should.be
-          .fulfilled;
+    it('admin 삭제를 성공합니다.', async function() {
+      // pre-condition
+      (await this.manager.admins(admin)).should.be.equal(true);
+      (await this.manager.adminNumber()).should.be.bignumber.equal(2);
 
-        // post-condition
-        (await this.tokenStake.stake(
-          this.manager.address
-        )).should.be.bignumber.equal(0);
-        (await this.carryToken.balanceOf(
-          this.tokenStake.address
-        )).should.be.bignumber.equal(0);
-        (await this.carryToken.balanceOf(owner)).should.be.bignumber.equal(
-          initialBalance + DEPOSIT_AMOUNT
-        );
-      });
+      // action
+      await this.manager.removeAdmin(admin, { from: owner }).should.be
+        .fulfilled;
+
+      // post-condition
+      (await this.manager.admins(admin)).should.be.equal(false);
+      (await this.manager.adminNumber()).should.be.bignumber.equal(1);
+    });
+  });
+
+  describe('withdrawAllStake()', function() {
+    const DEPOSIT_AMOUNT = 50;
+
+    beforeEach(async function() {
+      await this.carryToken.approve(this.tokenStake.address, DEPOSIT_AMOUNT, {
+        from: owner
+      }).should.be.fulfilled;
+      await this.tokenStake.depositStake(this.manager.address, DEPOSIT_AMOUNT, {
+        from: owner
+      }).should.be.fulfilled;
+    });
+
+    it('receiver의 주소가 zero address일 경우 실패합니다.', async function() {
+      await this.manager.withdrawAllStake(ZERO_ADDRESS, { from: owner }).should
+        .be.rejected;
+    });
+
+    it('허가되지 않은 주소일 경우 실패합니다.', async function() {
+      await this.manager.withdrawAllStake(owner, { from: anyone }).should.be
+        .rejected;
+    });
+
+    it('모든 담보 인출을 성공합니다.', async function() {
+      // pre-condition
+      (await this.tokenStake.stake(
+        this.manager.address
+      )).should.be.bignumber.equal(DEPOSIT_AMOUNT);
+      (await this.carryToken.balanceOf(
+        this.tokenStake.address
+      )).should.be.bignumber.equal(DEPOSIT_AMOUNT);
+      const initialBalance = (await this.carryToken.balanceOf(
+        owner
+      )).toNumber();
+
+      await this.manager.withdrawAllStake(owner, { from: owner }).should.be
+        .fulfilled;
+
+      // post-condition
+      (await this.tokenStake.stake(
+        this.manager.address
+      )).should.be.bignumber.equal(0);
+      (await this.carryToken.balanceOf(
+        this.tokenStake.address
+      )).should.be.bignumber.equal(0);
+      (await this.carryToken.balanceOf(owner)).should.be.bignumber.equal(
+        initialBalance + DEPOSIT_AMOUNT
+      );
     });
   });
 });

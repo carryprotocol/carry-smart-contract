@@ -1,9 +1,10 @@
 pragma solidity ^0.4.23;
 
 import "../ownable/ManagedStorage.sol";
+import "./IUserDataStorage.sol";
 
 
-contract UserDataStorage is ManagedStorage {
+contract UserDataStorage is ManagedStorage, IUserDataStorage {
     // key: userId
     mapping(uint => address) public userAddresses;
     mapping(uint => string) public userGenders;
@@ -12,8 +13,6 @@ contract UserDataStorage is ManagedStorage {
     mapping(uint => uint) public userBirthDays; // timestamp
     mapping(uint => string) public userCountries; // 거주 지역
     mapping(uint => string) public userJobs; // 직장
-
-    event UserDataUpserted(uint _userId, address _userAddress, string _userGender, uint _userBirthYear, uint _userBirthMonth, uint _userBirthDay, string _userCountry, string _userJob);
 
     constructor(address[] _appManagerAddress) public ManagedStorage(_appManagerAddress) {}
 
