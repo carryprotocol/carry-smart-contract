@@ -4,8 +4,8 @@ pragma solidity ^0.4.23;
 * @dev Coupon BT, Point BT, AD 를 위해 CRE 토큰을 스테이킹 하는 컨트랙트.
 */
 contract ITokenStake {
-    event DepositStake(address _beneficiary, uint _amount);
-    event WithdrawStake(address _receiver, uint _amount);
+    event DepositStake(address _beneficiary, address _sender, uint _amount);
+    event WithdrawStake(address _depositor,address _receiver, uint _amount);
     event DecreaseCouponQuota(address _stakeHolder);
     event DecreasePointQuota(address _stakeHolder);
     event ResetAllQuotas();

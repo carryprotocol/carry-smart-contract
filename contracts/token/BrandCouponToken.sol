@@ -2,26 +2,27 @@ pragma solidity ^0.4.23;
 
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Metadata.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "./TokenStake.sol";
+import "./IBrandCouponToken.sol";
 import "../libs/Ownable.sol";
 
 
-contract BrandCouponToken is ERC721Metadata, Ownable {
+contract BrandCouponToken is ERC721Metadata, Ownable, IBrandCouponToken{
     using SafeMath for uint;
 
-    TokenStake public tokenStake;
+    ITokenStake public tokenStake;
     uint public minStakeBalance;
 
     event TokenStakeChanged(address newTokenStake);
     event MinStakeBalanceChanged(uint newMinStakeBalance);
 
-    constructor(string _name, string _symbol, TokenStake _tokenStake, uint _minStakeBalance)
+    constructor(string _name, string _symbol, ITokenStake _tokenStake, uint _minStakeBalance)
         public ERC721Metadata(_name, _symbol) {
+        setOwner(msg.sender);
         setTokenStake(_tokenStake);
         setMinStakeBalance(_minStakeBalance);
     }
 
-    function setTokenStake(TokenStake _tokenStake) public onlyOwner {
+    function setTokenStake(ITokenStake _tokenStake) public onlyOwner {
         require(_tokenStake != address(0));
         tokenStake = _tokenStake;
         emit TokenStakeChanged(address(tokenStake));
@@ -34,8 +35,10 @@ contract BrandCouponToken is ERC721Metadata, Ownable {
     }
 
     function mint(address _to, uint256 _tokenId, string _uri) public returns (bool) {
-        uint stakeBalance = tokenStake.stake(msg.sender);
+        uint stakeBalance = tokenStake.stake(msg.sender); //TODO Interface 에 stake variable 없음 getter function 한개 달면됨
         require(stakeBalance >= minStakeBalance);
+        
+        // TODO tokenStake.decreaseCouponQuota(msg.sender)
 
         _mint(_to, _tokenId);
 

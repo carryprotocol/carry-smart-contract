@@ -46,7 +46,7 @@ contract BrandPointToken is ManagedStorage {
         bytes32 _btKey,
         address _userAddress
         ) public onlyManagers
-	{
+  	{
         require(tokenStake.stake(msg.sender) >= minStakeBalance);
         require(creators[_btKey] == address(0) || creators[_btKey] == msg.sender, "Cannot access to other device manager's brand point token");
 
