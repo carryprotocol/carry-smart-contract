@@ -4,9 +4,10 @@ import "../storage/PurchaseDataStorage.sol";
 import "../storage/UserDataStorage.sol";
 import "../libs/ECVerify.sol";
 import "../ownable/Manager.sol";
+import "./IAppManager.sol";
 
 
-contract AppManager is Manager {
+contract AppManager is Manager, IAppManager {
     PurchaseDataStorage public purchaseDataStorage;
     UserDataStorage public userDataStorage;
 
@@ -19,12 +20,14 @@ contract AppManager is Manager {
 
     // TODO: if upgradeable, it goes to the constructor
     function registerPurchaseDataStorage(address _purchaseDataStorage) public onlyAdmins {
+        require(_purchaseDataStorage != address(0));
         purchaseDataStorage = PurchaseDataStorage(_purchaseDataStorage);
         emit RegisterPurchaseDataStorage(_purchaseDataStorage);
     }
 
     // TODO: if upgradeable, it goes to the constructor
     function registerUserDataStorage(address _userDataStorage) public onlyAdmins {
+        require(_userDataStorage != address(0));
         userDataStorage = UserDataStorage(_userDataStorage);
         emit RegisterUserDataStorage(_userDataStorage);
     }
@@ -45,19 +48,7 @@ contract AppManager is Manager {
         address _userAddress,
         bytes _userSignature
         ) public onlyAdmins
-    {
-        uint amount = calculateCRE(
-            _purchaseId,
-            _userId,
-            _userAddress,
-            _paymentMethod,
-            _createdAt,
-            _storeLatitude,
-            _storeLongitude,
-            _items
-        );
-        require(tokenStake.stake(address(this)) >= amount, "Not enough stake");
-
+    { 
         bytes memory message = abi.encodePacked(
             _purchaseId,
             _userId,
@@ -77,13 +68,9 @@ contract AppManager is Manager {
             _createdAt,
             _storeLatitude,
             _storeLongitude,
-            _items
+            _items,
+            keccak256(_userSignature)
         );
-
-        if (amount > 0) {
-            tokenStake.withdrawStake(_userAddress, amount);
-            emit RewardTokenForPurchaseData(_userAddress, amount);
-        }
     }
 
     function upsertUserData(
@@ -119,25 +106,5 @@ contract AppManager is Manager {
             _userCountry,
             _userJob
         );
-    }
-
-    function calculateCRE(
-        uint _purchaseId,
-        uint _userId,
-        address _userAddress,
-        string _paymentMethod,
-        uint _createdAt,
-        uint _storeLatitude,
-        uint _storeLongitude,
-        bytes _items
-        ) public view returns(uint)
-    {
-        uint amount;
-
-        // TODO: fill some logic depends on given data
-        amount = 10; // 1 token for test
-        //
-
-        return amount;
     }
 }

@@ -26,37 +26,37 @@ contract ITokenStake {
     */
     function withdrawStake(address _receiver, uint _amount) public returns(bool);
 
-    /**
-    * @dev Coupon Brand Token을 발행했을 때 Quota 를 1개 차감하는 함수.
-    * @param _stakeHolder 스테이크 홀더의 주소
-    * @return bool decreaseCouponQuota 가 올바르게 됬는지 bool 반환
-    */
-    function decreaseCouponQuota(address _stakeHolder) public returns(bool);
-
-    /**
-    * @dev Point Brand Token을 발행했을 때 Quota 를 1개 차감하는 함수.
-    * @param _stakeHolder 스테이크 홀더의 주소
-    * @return bool decreasePointQuota 가 올바르게 됬는지 bool 반환
-    */
-    function decreasePointQuota(address _stakeHolder) public returns(bool);
-
-    /**
-    * @dev 1달 마다 모든 스테이크 홀더의 모든 Quota 를 초기화 하는 함수.
-    * @return bool resetAllQuotas 가 올바르게 됬는지 bool 반환
-    */
-    function resetAllQuotas() public returns(bool);
-
-    /**
-    * @dev 1달 동안 Coupon Brand Token을 발행할 수 있는 총량을 반환하는 함수
-    * @param _stakeHolder 스테이크 홀더의 주소
-    * @return uint 1달 동안 Coupon Brand Token을 발행할 수 있는 총량
-    */
-    function getSpendableCouponQuota(address _stakeHolder) public view returns(uint);
-
-    /**
-    * @dev 1달 동안 Point Brand Token을 발행할 수 있는 총량을 반환하는 함수
-    * @param _stakeHolder 스테이크 홀더의 주소
-    * @return uint 1달 동안 Point Brand Token을 발행할 수 있는 총량
-    */
-    function getSpendablePointQuota(address _stakeHolder) public view returns(uint);
+//    /**
+//    * @dev Coupon Brand Token을 발행했을 때 Quota 를 1개 차감하는 함수.
+//    * @param _stakeHolder 스테이크 홀더의 주소
+//    * @return bool decreaseCouponQuota 가 올바르게 됬는지 bool 반환
+//    */
+//    function decreaseCouponQuota(address _stakeHolder) public returns(bool);
+//
+//    /**
+//    * @dev Point Brand Token을 발행했을 때 Quota 를 1개 차감하는 함수.
+//    * @param _stakeHolder 스테이크 홀더의 주소
+//    * @return bool decreasePointQuota 가 올바르게 됬는지 bool 반환
+//    */
+//    function decreasePointQuota(address _stakeHolder) public returns(bool);
+//
+//    /**
+//    * @dev 1달 마다 모든 스테이크 홀더의 모든 Quota 를 초기화 하는 함수.
+//    * @return bool resetAllQuotas 가 올바르게 됬는지 bool 반환
+//    */
+//    function resetAllQuotas() public returns(bool);
+//
+//    /**
+//    * @dev 1달 동안 Coupon Brand Token을 발행할 수 있는 총량을 반환하는 함수
+//    * @param _stakeHolder 스테이크 홀더의 주소
+//    * @return uint 1달 동안 Coupon Brand Token을 발행할 수 있는 총량
+//    */
+//    function getSpendableCouponQuota(address _stakeHolder) public view returns(uint);
+//
+//    /**
+//    * @dev 1달 동안 Point Brand Token을 발행할 수 있는 총량을 반환하는 함수
+//    * @param _stakeHolder 스테이크 홀더의 주소
+//    * @return uint 1달 동안 Point Brand Token을 발행할 수 있는 총량
+//    */
+//    function getSpendablePointQuota(address _stakeHolder) public view returns(uint);
 }
