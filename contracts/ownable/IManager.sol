@@ -23,6 +23,7 @@ contract IManager {
     /**
     * @dev 해당 manager의 address로 예치된 담보를 모두 출금하는 함수
     * @param _receiver 출금한 담보를 받을 주소
+    * @return result 성공 여부
     */
-    function withdrawAllStake(address _receiver) public;
+    function withdrawAllStake(address _receiver) public returns(bool result);
 }

@@ -350,11 +350,49 @@ contract('DeviceManager', accounts => {
     });
 
     it('예치된 Device manager의 담보에 따라 허가된 발행 횟수보다 많이 발행하는 경우 담보금을 차감합니다.', async function() {
-      // TODO
+      // TODO: check after merging with Brand Point Token implementation
+      // pre-condition
+      const initialStake = (await this.tokenStake.stake(
+        this.deviceManager.address
+      )).toNumber();
+
+      // action
+      await this.deviceManager.upsertBalance(
+        _signedBalance,
+        _signedSalt,
+        _storeSignedSymKey,
+        _userSignedSymKey,
+        _timestamp,
+        _btKey,
+        userAddress,
+        storeAddress,
+        createSignature(message, STORE_PRIVATE_KEY),
+        { from: owner }
+      ).should.be.fulfilled; // TODO: repeat calling this function
+
+      // post-condition
+      (
+        (await this.tokenStake.stake(this.deviceManager.address)).toNumber() <
+        initialStake
+      ).should.be.equal(true);
     });
 
     it('차감될 담보금이 부족할 경우 Brand Point Token 발행을 실패합니다.', async function() {
-      // TODO
+      // TODO: check after merging with Brand Point Token implementation
+      await this.deviceManager.withdrawAllStake(owner).should.be.fulfilled;
+
+      await this.deviceManager.upsertBalance(
+        _signedBalance,
+        _signedSalt,
+        _storeSignedSymKey,
+        _userSignedSymKey,
+        _timestamp,
+        _btKey,
+        userAddress,
+        storeAddress,
+        createSignature(message, STORE_PRIVATE_KEY),
+        { from: owner }
+      ).should.be.rejected;
     });
 
     it('잘못된 비밀 키가 서명에 사용된 경우 실패합니다.', async function() {
